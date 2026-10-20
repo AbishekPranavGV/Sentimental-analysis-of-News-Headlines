@@ -1,0 +1,37 @@
+name: CI Quality & Notebook Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install nbformat
+
+      - name: Validate Jupyter Notebooks
+        run: |
+          python -c "
+          import nbformat, glob
+          notebooks = glob.glob('*.ipynb')
+          print(f'Found notebooks: {notebooks}')
+          for nb in notebooks:
+              with open(nb, 'r', encoding='utf-8') as f:
+                  n = nbformat.read(f, as_version=4)
+              print(f'Successfully validated {nb}: {len(n.cells)} cells')
+          "
